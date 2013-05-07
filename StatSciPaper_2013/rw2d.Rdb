@@ -1,0 +1,441 @@
+<?xml version="1.0"?>
+<article xmlns:r="http://www.r-project.org"
+         xmlns:xi="http://www.w3.org/2003/XInclude"
+	 xmlns:c="http://www.C.org">
+
+<articleinfo>
+
+<title>Implementing 2-D Random Walks with <r:pkg>Rllvm</r:pkg></title>
+
+<author><firstname>Duncan</firstname><surname>Temple Lang</surname>
+  <affiliation><orgname>University of California at Davis</orgname>
+               <orgdiv>Department of Statistics</orgdiv>
+  </affiliation>
+</author>
+</articleinfo>
+
+<section id="setup">
+<title></title>
+
+<para>
+Here we implement the very initial version of Ross Ihaka's
+2D random walk example of how to improve the performance of code.
+His example starts with the naieve and obvious implementation
+of the 2D walk.  At the end, he vectorizes this in <r/> code and
+gets a speedup of a factor of about 200.
+</para>
+<para>
+The naive implementation is
+<r:code>
+rw2d1 =
+function(n = 100) {
+    xpos = ypos = numeric(n)
+    for(i in 2:n) {
+          # Decide whether we are moving horizontally or vertically.
+      delta = if(runif(1) > .5) 1 else -1
+      if (runif(1) > .5) {
+        xpos[i] = xpos[i-1] + delta
+        ypos[i] = ypos[i-1]
+      }
+      else {
+        xpos[i] = xpos[i-1]
+        ypos[i] = ypos[i-1] + delta
+      }
+    }
+    list(x = xpos, y = ypos)
+}
+</r:code>
+
+We have seen how to write loops, get elements from pointers and do conditional branching
+in <filename>cumsum.Rdb</filename>.
+So to "compile" this function is very similar.
+</para>
+</section>
+<section id="compileCode">
+<title>Compiling the Code</title>
+<para>
+We are going to implement a slightly different version
+that receives the int * pointers for x and y and just
+fills them in. We can write a .Call() wrapper for this
+so we can compare apples and apples.
+
+<r:code>
+library(Rllvm)
+InitializeNativeTarget()
+mod = Module("2Drw")
+ptrInt = pointerType(Int32Type)
+fun = Function("rw2d", VoidType, c(x = ptrInt, y = ptrInt, len = Int32Type), mod)
+</r:code>
+<r:code>
+entry = Block(fun, "entry")
+cond = Block(fun, "loopCond")
+body = Block(fun, "loopBody")
+ret = Block(fun, "return")
+h = Block(fun, "Horizontal")
+v = Block(fun, "Vertical")
+increment = Block(fun, "increment")
+</r:code>
+<r:code>
+one = createIntegerConstant(1L)
+minusOne = createIntegerConstant(-1L)
+</r:code>
+
+<r:code>
+ir = IRBuilder(entry)
+
+iv = ir$createLocalVariable(Int32Type, "i")
+lena = ir$createLocalVariable(Int32Type, "lenp")
+xa = ir$createLocalVariable(ptrInt, "xp")
+ya = ir$createLocalVariable(ptrInt, "yp")
+delta = ir$createLocalVariable(Int32Type, "delta")
+ir$createStore(fun$x, xa)
+ir$createStore(fun$y, ya)
+ir$createStore(fun$len, lena)
+ir$createStore(one, iv)
+ir$createBr(cond)
+</r:code>
+
+
+<r:code>
+ir$setInsertPoint(cond)
+a = ir$createLoad(iv)
+b = ir$createLoad(lena)
+ok = ir$createICmp(ICMP_SLT, a, b)
+ir$createCondBr(ok, body, ret)
+</r:code>
+
+
+<r:code>
+ir$setInsertPoint(ret)
+ir$createRetVoid()
+</r:code>
+
+
+<r:code>
+ir$setInsertPoint(body)
+ # declare runif which takes a number but ignores it. 
+runif = Function("runif", DoubleType, c(n = Int32Type), mod)
+
+ # compute delta
+u = ir$createCall(runif, one)
+gt = ir$createFCmp(FCMP_UGE, u, createDoubleConstant(.5))
+ir$createStore(ir$createSelect(gt, minusOne, one),  delta)
+
+ # now determine whether to go horiz or vert.
+u = ir$createCall(runif, one)
+gt = ir$createFCmp(FCMP_UGE, u, createDoubleConstant(.5))
+
+ir$createCondBr(gt, h, v)
+</r:code>
+
+
+Next we fill in the horizontal move.
+We load x[i-1] and add delta to it
+and the store this in x[i]
+<r:code>
+ir$setInsertPoint(h)
+a = ir$createLoad(iv)
+b = ir$binOp(Sub, a, one)
+r = ir$createLoad(xa)
+idx = ir$createSExt(b, 64L)
+x.prev = ir$createLoad(ir$createGEP(r, idx))
+nw = ir$binOp(Add, x.prev, ir$createLoad(delta))
+a = ir$createLoad(xa)
+i = ir$createLoad(iv)
+idx = ir$createSExt(i, 64L)
+xi = ir$createGEP(a, idx)
+ir$createStore(nw, xi)
+</r:code>
+
+Next we copy y[i-1] to y[i]
+<r:code>
+a = ir$createLoad(iv)
+b = ir$binOp(Sub, a, one)
+r = ir$createLoad(ya)
+idx = ir$createSExt(b, 64L)
+y.prev = ir$createLoad(ir$createGEP(r, idx))
+a = ir$createLoad(ya)
+i = ir$createLoad(iv)
+idx = ir$createSExt(i, 64L)
+yi = ir$createGEP(a, idx)
+ir$createStore(y.prev, yi)
+</r:code>
+Finally, we jump to the loop increment and then to the condition.
+<r:code>
+ir$createBr(increment)
+</r:code>
+
+
+This is the increment block that updates i and
+then jumps to the loop condition.
+<r:code>
+ir$setInsertPoint(increment)
+i = ir$createLoad(iv)
+inc = ir$binOp(Add, i, 1L)
+ir$createStore(inc, iv)
+ir$createBr(cond)
+</r:code>
+
+
+
+<r:code>
+ir$setInsertPoint(v)
+
+a = ir$createLoad(iv)
+b = ir$binOp(Sub, a, one)
+r = ir$createLoad(ya)
+idx = ir$createSExt(b, 64L)
+y.prev = ir$createLoad(ir$createGEP(r, idx))
+nw = ir$binOp(Add, y.prev, ir$createLoad(delta))
+a = ir$createLoad(ya)
+i = ir$createLoad(iv)
+idx = ir$createSExt(i, 64L)
+yi = ir$createGEP(a, idx)
+ir$createStore(nw, yi)
+
+
+a = ir$createLoad(iv)
+b = ir$binOp(Sub, a, one)
+r = ir$createLoad(xa)
+idx = ir$createSExt(b, 64L)
+x.prev = ir$createLoad(ir$createGEP(r, idx))
+a = ir$createLoad(xa)
+i = ir$createLoad(iv)
+idx = ir$createSExt(i, 64L)
+xi = ir$createGEP(a, idx)
+ir$createStore(x.prev, xi)
+
+
+
+ir$createBr(increment)
+</r:code>
+
+</para>
+</section>
+
+<section>
+<title>Timings</title>
+
+<para>
+We now run our compiled code to see how fast it is relative to the
+other implementations.  Our compiled code references the
+<c:func>runif</c:func> routine and so needs to be able to find that.
+We do this before running the code as it only needs to be done once.
+<r:code>
+ee = ExecutionEngine(mod)
+Optimize(mod, ee)
+llvmAddSymbol(runif = getNativeSymbolInfo("runif")$address)
+</r:code>
+</para>
+<para>
+We'll set the number of steps to something quite large so that we measure sufficiently
+lengthy computations:
+<r:code>
+n = 1e7
+</r:code>
+
+</para>
+
+<para>
+We run the interpreted version 5 times and take the medians of the
+three different measurements (self, system and elapsed):
+<r:code>
+interp = system.time({rw2d1(n)})
+#interp = replicate(2, system.time({rw2d1(n)}))
+#interp = apply(interp, 1, median)
+</r:code>
+</para>
+
+<para>
+Now we run the compiled code
+<r:code>
+doit = 
+function(n = 1000000) {
+ x = integer(n)
+ y = integer(n)
+ .llvm(fun, x = x, y = y, n, .ee = ee, .all = TRUE)[c("x", "y")]
+}
+
+tt = system.time({ doit(n)})
+tt = system.time({ doit(n)}) # second time runs faster
+</r:code>
+
+
+<r:test>
+z = doit(100000)
+table(diff(z$x))
+table(diff(z$y))
+</r:test>
+These should be 50% 0 and 25% for each of -1 and 1.
+
+
+Since this runs much faster than the interpreted version, we 
+run more repetitions and again compute the median:
+<r:code>
+tt = replicate(10, system.time({ doit(n)}))
+tt = apply(tt, 1, median)
+</r:code>
+
+
+</para>
+<para>
+We'll also compare how well byte-compiling our interpreted
+function improves the performance:
+<r:code>
+library(compiler)
+g = cmpfun(rw2d1)
+cmp = replicate(3, system.time(g(n)))
+cmp = apply(cmp, 1, median)
+interp/cmp
+</r:code>
+</para>
+<para>
+Finally, we'll run the manually implemented vectorized
+version of the random walk that Ross Ihaka wrote.
+This is pure R, but highly leverages C-level computations
+within the interpreter.
+<r:code>
+ross = "rw1.R"
+source(ross)
+fastInterp = replicate(10, system.time({rw2d5(n)}))
+fastInterp = apply(fastInterp, 1, median)
+fastInterp/interp
+</r:code>
+
+
+<r:code eval="false">
+apply(fastInterp, 1, median)/apply(tt, 1, median)
+</r:code>
+
+
+<r:code>
+i = 3
+tmp = c(interp[i], cmp[i], fastInterp[i], tt[i])
+m = matrix(c(tmp, interp[i]/tmp), length(tmp), ,
+        dimnames = list(c("Interpeted", "Byte Compiled", "Vectorized", "Rllvm"), c("Time", "Speedup")))
+m
+
+
+</r:code>
+<r:code>
+res = structure(m, session = sessionInfo(), system = Sys.info(), when = Sys.time(), n = n)
+id = sprintf("rw2d.tm.1e7_%s", Sys.info()["sysname"])
+assign(id, res, globalenv())
+save( list = id, file = sprintf("%s.rda", id))
+</r:code>
+
+On a Macbook Pro (April 29th 2013) - elapsed time.
+<r:output><![CDATA[
+                 Time   Speedup
+Interpeted    167.950   1.00000
+Byte Compiled 115.211   1.45776
+Vectorized      0.894 187.86353
+Rllvm           0.649 258.78274
+]]></r:output>
+
+
+The following are for user time, not elapsed time.
+
+<table>
+<tgroup cols="3" align="right">
+<colspec colnum="1" align="left"/>
+<thead>
+<row><entry>Method</entry><entry>Times</entry><entry>Speedup</entry></row>
+</thead>
+<tbody>
+<row><entry>Interpreted</entry><entry>170.9</entry><entry>1</entry></row>
+<row><entry>Byte compiled</entry><entry>93.8</entry><entry>1.8</entry></row>
+<row><entry>Vectorized</entry><entry>.88</entry><entry>194.2</entry></row>
+<row><entry>Rllvm</entry><entry>.50</entry><entry>341.8</entry></row>
+</tbody>
+</tgroup>
+</table>
+
+</para>
+<para>
+With an optimized R (i.e. compiled with -O3)
+<table bgcolor="gray">
+  <?dbfo keep-together="auto"?>
+  <tgroup cols="3">
+    <thead>
+      <row>
+        <entry align="right"></entry>
+        <entry align="center">Time</entry>
+        <entry align="center">Speedup</entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+        <entry align="right">Interpeted</entry>
+        <entry align="right">169</entry>
+        <entry align="right">1</entry>
+      </row>
+      <row>
+        <entry align="right">Byte Compiled</entry>
+        <entry align="right">84.5</entry>
+        <entry align="right">2.00</entry>
+      </row>
+      <row>
+        <entry align="right">Vectorized</entry>
+        <entry align="right">0.81</entry>
+        <entry align="right">208</entry>
+      </row>
+      <row>
+        <entry align="right">Rllvm</entry>
+        <entry align="right">0.487</entry>
+        <entry align="right">346</entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table> 
+
+</para>
+<para>
+On a Macbook Pro, OSX 10.7.5, 8G RAM, R-3.1 devel, optimization level -O3, 
+I get (Apr 27 2013)
+<r:output><![CDATA[
+                  Time    Speedup
+Interpeted    161.2180   1.000000
+Byte Compiled  99.4940   1.620379
+Vectorized      0.7495 215.100734
+Rllvm           0.6220 259.192926
+]]></r:output>
+</para>
+
+
+<invisible>
+All of these done with the same version of Rllvm &amp; LLVM  3.1 and 
+R-2.16 on my Mac laptop Aug 4, 2012
+
+                 Time    Speedup
+Interpeted    302.488   1.000000
+Byte Compiled 203.226   1.488432
+Vectorized      1.549 195.279535
+Rllvm           0.641 471.900156
+
+                  Time    Speedup
+Interpeted    305.5500   1.000000
+Byte Compiled 204.3310   1.495368
+Vectorized      1.5775 193.692552
+Rllvm           0.6430 475.194401
+
+
+Linux machine: (donald)
+                 Time    Speedup
+Interpeted    255.310   1.000000
+Byte Compiled 167.970   1.519974
+Vectorized      1.365 187.040293
+Rllvm           0.970 263.206186
+
+
+eeyore:
+               Time    Speedup
+Interpeted    171.62   1.000000
+Byte Compiled  85.49   2.007486
+Vectorized      0.88 195.022727
+Rllvm           0.70 245.171429
+</invisible>
+
+
+</section>
+</article>
