@@ -49,7 +49,7 @@ if(TRUE) {
 }
 
 if(FALSE) {
-  # note tested!
+  # not tested!
   mod = Module("fuse")
   d = compileFunction(Dnorm, DoubleType, list(DoubleType, DoubleType, DoubleType), .insertReturn = TRUE, mod = mod)
   fc = compileFunction(f, DoubleType, list(DoublePtrType, DoubleType, DoubleType), .insertReturn = TRUE, mod = mod)
