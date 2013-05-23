@@ -44,7 +44,7 @@ The timings were performed on 3 machines with the following configurations:
 simpler, with a single machine.  We will figure out a better way to visualize these.  </p>
 
 
-<h2><a href="https://github.com/duncantl/Rllvm/tree/master/explorations/fib.R">Fibonacci Sequence</a></h2>
+<h2><a href="fib.R">Fibonacci Sequence</a></h2>
 This example uses the following R function to compute the value of the fibonnaci sequence
 <pre class="Rfunction">
 fib =
@@ -86,7 +86,7 @@ implementation of a function can be made to perform very well without programmin
 language, explicitly.
 
 <h2><a
-href="https://github.com/duncantl/Rllvm/tree/master/tests/rw2d.R">2-Dimensional
+href="rw2d.R">2-Dimensional
 Random Walk</a></h2>
 <p>
 <a href=""https://github.com/duncantl/Rllvm/tree/master/tests/rw2d.Rdb"">annotated
@@ -120,7 +120,7 @@ The results illustrate that the Rllvm drastically outperforms the regular R code
 code.  What is somewhat interesting is that the llvm approach outperforms the manually vectorized
 approach
 
-<h2><a href="https://github.com/duncantl/Rllvm/tree/master/explorations/fuseLoop.R">Loop Fusion</a></h2>
+<h2><a href="fuseLoop.R">Loop Fusion</a></h2>
 
 This example explores how we can speed up the native R evaluation of <code
 class="rexpr">sum(log(dnorm(x, mu, sigma)))</code> by transforming the three loops (in the calls to
@@ -155,7 +155,7 @@ with the built-in vectorized form in R.  On the various different Linux configur
 performance gain. So our R code outperforms the built-in vectorized form in R.
 
 
-<h2><a href="https://github.com/duncantl/Rllvm/tree/master/explorations/fgets.R">Sample CSV File</a></h2>
+<h2><a href="fgets.R">Sample CSV File</a></h2>
 <p>
 <a href="https://github.com/duncantl/Rllvm/tree/master/explorations/fgets.Rdb">annotated version</a>
 <p>
@@ -196,9 +196,9 @@ a text file using readLines by a factor of at least 15.  So something that takes
 a day, or something that takes 15 minutes would complete in 1 minute. On some platforms and
 configurations, the performance is increased.
 
-<h2><a href="https://github.com/duncantl/Rllvm/tree/master/explorations/dist.R">Distance</a></h2>
+<h2><a href="dist.R">Distance</a></h2>
 <p>
-<a href="https://github.com/duncantl/Rllvm/tree/master/explorations/distand.Rdb">annotated description</a>
+<a href="https://github.com/duncantl/Rllvm/tree/master/explorations/distance.Rdb">annotated description</a>
 <p>
 
 This example considers computing the distance between each pair of observations
@@ -234,6 +234,6 @@ code used by R by a minimum of a factor of 1.6 and up to a factor of 6.
 <address><a href="http://www.stat.ucdavis.edu/~duncan">Duncan Temple Lang</a>
 <a href=mailto:dtemplelang@ucdavis.edu>&lt;dtemplelang@ucdavis.edu&gt;</a></address>
 <!-- hhmts start -->
-Last modified: Thu May 23 10:19:59 PDT 2013
+Last modified: Thu May 23 10:28:09 PDT 2013
 <!-- hhmts end -->
 </body> </html>
