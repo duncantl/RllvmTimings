@@ -85,7 +85,13 @@ redundant computation in this because of the recursion.  However, it does illust
 implementation of a function can be made to perform very well without programming in another
 language, explicitly.
 
-<h2><a href="https://github.com/duncantl/Rllvm/tree/master/tests/rw2d.Rdb">2-Dimensional Random Walk</a></h2>
+<h2><a
+href="https://github.com/duncantl/Rllvm/tree/master/tests/rw2d.R">2-Dimensional
+Random Walk</a></h2>
+<p>
+<a href=""https://github.com/duncantl/Rllvm/tree/master/tests/rw2d.Rdb"">annotated
+version</a>
+<p>
 
 This example is from Ross Ihaka's example of a 2-dimensional random walk and how to profile code and
 make it more efficient by vectorization.  The timings compare a very naive implementation, a byte
@@ -149,8 +155,10 @@ with the built-in vectorized form in R.  On the various different Linux configur
 performance gain. So our R code outperforms the built-in vectorized form in R.
 
 
-<h2><a href="https://github.com/duncantl/Rllvm/tree/master/explorations/fgets.Rdb">Sample CSV File</a></h2>
-
+<h2><a href="https://github.com/duncantl/Rllvm/tree/master/explorations/fgets.R">Sample CSV File</a></h2>
+<p>
+<a href="https://github.com/duncantl/Rllvm/tree/master/explorations/fgets.Rdb">annotated version</a>
+<p>
 This example considers how to efficiently sample lines from a text file, specifically a large CSV
 file.  This experiment compares vectorized approaches in R that use more memory than a more direct
 line-by-line approach that we can implement with an R loop and the compile to native code.  This
@@ -188,7 +196,10 @@ a text file using readLines by a factor of at least 15.  So something that takes
 a day, or something that takes 15 minutes would complete in 1 minute. On some platforms and
 configurations, the performance is increased.
 
-<h2><a href="https://github.com/duncantl/Rllvm/tree/master/explorations/distance.Rdb">Distance</a></h2>
+<h2><a href="https://github.com/duncantl/Rllvm/tree/master/explorations/dist.R">Distance</a></h2>
+<p>
+<a href="https://github.com/duncantl/Rllvm/tree/master/explorations/distand.Rdb">annotated description</a>
+<p>
 
 This example considers computing the distance between each pair of observations
 between two data sets. This contrasts the approach of using R's <code class="rfunc">dist</code>
@@ -223,6 +234,6 @@ code used by R by a minimum of a factor of 1.6 and up to a factor of 6.
 <address><a href="http://www.stat.ucdavis.edu/~duncan">Duncan Temple Lang</a>
 <a href=mailto:dtemplelang@ucdavis.edu>&lt;dtemplelang@ucdavis.edu&gt;</a></address>
 <!-- hhmts start -->
-Last modified: Sat May 11 14:38:40 PDT 2013
+Last modified: Thu May 23 10:19:59 PDT 2013
 <!-- hhmts end -->
 </body> </html>

@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <article xmlns:r="http://www.r-project.org"
-         xmlns:xi="http://www.w3.org/2003/XInclude">
+         xmlns:xi="http://www.w3.org/2003/XInclude"
+	 xmlns:omg="http://www.omegahat.org">
 
 <articleinfo>
 
@@ -12,6 +13,16 @@
   </affiliation>
 </author>
 </articleinfo>
+
+
+<para>
+To run the code, use the <omg:pkg>XML</omg:pkg> package and run the code directly from this document with
+<r:code eval="false" id="source">
+library(XML)
+xmlSourceFunctions("distance.Rdb", verbose = FALSE); xmlSource("distance.Rdb", ids = "compile"); xmlSource("distance.Rdb", xnodes = "//r:test[@id = 'run' or @id = 'test']")
+</r:code>
+</para>
+
 
 <section>
 <title></title>
@@ -347,8 +358,4 @@ prudent to compile this <r/> code specifically  for
 a particular data set, knowing the types of its columns.
 </para>
 </section>
-
-<r:code eval="false" id="source">
-xmlSourceFunctions("distance.Rdb", verbose = FALSE); xmlSource("distance.Rdb", ids = "compile"); xmlSource("distance.Rdb", xnodes = "//r:test[@id = 'run' or @id = 'test']")
-</r:code>
 </article>

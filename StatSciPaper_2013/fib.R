@@ -34,7 +34,7 @@ apply(tm.30, 2, function(x) x/min(x))
 res = structure(tm.30, session = sessionInfo(), system = Sys.info(), when = Sys.time())
 id = sprintf("fib.tm.30_%s", Sys.info()["sysname"])
 assign(id, res, globalenv())
-save( list = id, file = sprintf("%s.rda", id))
+#save( list = id, file = sprintf("%s.rda", id))
 
 
 ####################
@@ -57,14 +57,7 @@ function(n)
 #fibv_c = compileFunction(fib_v, INTSXPType, INTSXPType, as(fc, "Module"))
 
 
-
 # OS X
-
-getTimes =
-function(n) {
-
-}
-
 
 #t(apply(tm.30, 1, function(x)  x/apply(tm.30, 2, min)))
 

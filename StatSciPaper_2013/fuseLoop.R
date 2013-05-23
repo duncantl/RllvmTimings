@@ -63,7 +63,7 @@ if(FALSE) {
   print(a - b, digits = 16)
 }
 
-if(FALSE) {
+if(TRUE) {
   n = 1e7
   x = rnorm(n)  # 1e6 causes a segfault. Not any more - problem with reallocating local variables inside loop!
   a = .llvm(fc, x, 0, 1, length(x))
