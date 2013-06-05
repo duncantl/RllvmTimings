@@ -108,7 +108,7 @@ print(tm, digits = 3)
 </pre>
 
 <pre class="output">
-            fib.tm.30_Darwin fib.tm.30_Linux fib.tm.30_lipschitz_Linux_gcc fib.tm.30_lipschitz_Linux
+                   Darwin          Linux     lipschitz_Linux_gcc lipschitz_Linux
                  Time Speedup   Time Speedup    Time Speedup   Time Speedup
 Interpeted    171.083    1.00 196.62    1.00 100.299    1.00 92.389    1.00
 Byte Compiled 123.921    1.38 120.83    1.63  60.507    1.66 51.020    1.81
@@ -190,7 +190,7 @@ LLVM             3.04    21.6    6.46    14.8    3.32    16.2    3.01    22.9
 FastCSVSample    2.79    23.5    6.33    15.1    3.81    14.1    2.49    27.7
 </pre>
 <img src="sampleCSVTimes.png"/>
-
+<p>
 These results indicate that the llvm-approach can outperform the most obvious R approach to sampling
 a text file using readLines by a factor of at least 15.  So something that takes 2 weeks would take
 a day, or something that takes 15 minutes would complete in 1 minute. On some platforms and
@@ -234,6 +234,6 @@ code used by R by a minimum of a factor of 1.6 and up to a factor of 6.
 <address><a href="http://www.stat.ucdavis.edu/~duncan">Duncan Temple Lang</a>
 <a href=mailto:dtemplelang@ucdavis.edu>&lt;dtemplelang@ucdavis.edu&gt;</a></address>
 <!-- hhmts start -->
-Last modified: Thu May 23 10:28:09 PDT 2013
+Last modified: Wed Jun  5 06:16:05 PDT 2013
 <!-- hhmts end -->
 </body> </html>
