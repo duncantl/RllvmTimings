@@ -1,5 +1,15 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html> <head>
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+<link rel="stylesheet" href="/resources/demos/style.css" />
+<script>
+$(function() {
+$( "#rw2d-tabs" ).tabs();
+});
+</script>
+
 <style type="text/css">
 BODY {
   background: #FFF;
@@ -14,7 +24,7 @@ pre.rcode {
   height: 0px;
 }
 </style>
-<title></title>
+<title>Timings for Rllvm Experiments</title>
 </head>
 
 <body>
@@ -89,7 +99,7 @@ language, explicitly.
 href="rw2d.R">2-Dimensional
 Random Walk</a></h2>
 <p>
-<a href=""https://github.com/duncantl/Rllvm/tree/master/tests/rw2d.Rdb"">annotated
+<a href="https://github.com/duncantl/Rllvm/tree/master/tests/rw2d.Rdb"">annotated
 version</a>
 <p>
 
@@ -118,7 +128,22 @@ Rllvm           0.520  329.32   1.09  180.31   0.401  250.12  0.413  223.97
 
 The results illustrate that the Rllvm drastically outperforms the regular R code or byte-compiled
 code.  What is somewhat interesting is that the llvm approach outperforms the manually vectorized
-approach
+approach.
+
+
+<div id="rw2d-tabs">
+ <ul>
+   <li><a href="#rw2d-timings">Timings</a>
+   <li><a href="#rw2d-speedup">Speedup</a>       
+ </ul>
+ <div id="rw2d-timings">
+   <img src="rw2d_time.png">
+ </div>
+ <div id="rw2d-speedup">
+  <img src="rw2d_speedup.png">
+ </div>
+</div>
+
 
 <h2><a href="fuseLoop.R">Loop Fusion</a></h2>
 
@@ -234,6 +259,6 @@ code used by R by a minimum of a factor of 1.6 and up to a factor of 6.
 <address><a href="http://www.stat.ucdavis.edu/~duncan">Duncan Temple Lang</a>
 <a href=mailto:dtemplelang@ucdavis.edu>&lt;dtemplelang@ucdavis.edu&gt;</a></address>
 <!-- hhmts start -->
-Last modified: Wed Jun  5 06:16:05 PDT 2013
+Last modified: Wed Jun  5 07:13:20 PDT 2013
 <!-- hhmts end -->
 </body> </html>

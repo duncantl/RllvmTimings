@@ -19,7 +19,7 @@ rw2d1 =
   }
 
 rw2d5 =
-    # Sample from 4 directions, not horizontally and verticallly
+    # Sample from 4 directions, not horizontally and vertically
     # separately.
   function(n = 100000) {
     xsteps = c(-1,  1,  0,  0)

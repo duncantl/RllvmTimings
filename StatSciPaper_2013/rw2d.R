@@ -191,7 +191,7 @@ fastInterp/interp
 i = 3
 tmp = c(interp[i], cmp[i], fastInterp[i], tt[i])
 m = matrix(c(tmp, interp[i]/tmp), length(tmp), ,
-        dimnames = list(c("Interpeted", "Byte Compiled", "Vectorized", "Rllvm"), c("Time", "Speedup")))
+        dimnames = list(c("Interpreted", "Byte Compiled", "Vectorized", "Rllvm"), c("Time", "Speedup")))
 m
 
 

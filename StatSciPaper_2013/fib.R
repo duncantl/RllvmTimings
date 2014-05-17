@@ -8,11 +8,19 @@ function(n)
     fib(n - 1L) + fib(n - 2L)
 }
 
+fibc =
+function(n)
+{
+  if (n < 2L) 
+     n
+  else 
+    fibc(n - 1L) + fibc(n - 2L)
+}
 
 library(RLLVMCompile)
 library(compiler)
 
-fibc = cmpfun(fib)
+fibc = cmpfun(fibc)
 fc = compileFunction(fib, Int32Type, Int32Type)
 ee = ExecutionEngine(as(fc, "Module"), "Aggressive")
 
@@ -27,9 +35,9 @@ function(n)
 
 tm.30 = time(30)
 
-
-
 apply(tm.30, 2, function(x) x/min(x))
+
+apply(tm.30, 2, function(x) max(x)/x)
 
 res = structure(tm.30, session = sessionInfo(), system = Sys.info(), when = Sys.time())
 id = sprintf("fib.tm.30_%s", Sys.info()["sysname"])

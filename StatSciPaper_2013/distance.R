@@ -24,4 +24,4 @@ function(g1, g2, op = euclidean, ...)
 
 euclidean <-
 function(x, y)
-   sum((x - y)^2)
+   sqrt(sum((x - y)^2))
