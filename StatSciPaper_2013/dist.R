@@ -7,7 +7,7 @@ function(X, Y, nx = nrow(X), ny = nrow(Y), p = ncol(X))
         for (j in 1:ny) {
             posX = i
             posY = j
-            total = 0
+            total = 0.0
             for (k in 1:p) {
                 total = total + (X[posX] - Y[posY])^2
                 posX = posX + nx
@@ -25,7 +25,7 @@ library(RLLVMCompile)
 mod = Module()
 declareFunction(list(VoidType, Int32Type), "printInt", mod)
 llvmAddSymbol("printInt")
-distc = compileFunction(dist, REALSXPType, list(DoublePtrType, DoublePtrType, Int32Type, Int32Type, Int32Type), module = mod)
+distc = compileFunction(dist, REALSXPType, list(DoublePtrType, DoublePtrType, Int32Type, Int32Type, Int32Type), module = mod, .integerLiterals = FALSE)
 
 
 A = matrix(as.numeric(1:15), 3,5)
